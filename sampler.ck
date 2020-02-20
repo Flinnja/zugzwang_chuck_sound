@@ -1,16 +1,16 @@
-adc => WvOut sampler => blackhole; // setup a unit generator that will send input from the mic to a .wav file
+adc => Gain sampler_gain => WvOut sampler => blackhole; // setup a unit generator that will send input from the mic to a .wav file
 
-0 => sampler.gain;
-
+1 => sampler.gain;
+0 => sampler_gain.gain;
 // Variables ============================================================
 // Static
 90 => int max_samples; // maximum amount of samples that will be saved as .wav files
 4 => float sample_length; // desired sample length in seconds - ramp time will be included in this
 56 => float time_between_samples; // time in seconds to wait after one sample is done recording before taking another
-500 => float ramp_length; // desired gain ramp length in ms
+100 => float sample_ramp_length; // desired gain ramp length in ms
 90 => float play_time; // desired time to run the program for in minutes
 
-sample_length - (2 * (ramp_length / 1000)) => sample_length; //adjust sample length to include ramp time
+sample_length - (2 * (sample_ramp_length / 1000)) => sample_length; //adjust sample length to include ramp time
 
 
 // Declared
@@ -31,9 +31,9 @@ fun void SamplerRecord(){
         for (0 => int i; i < max_samples; i++){
             <<< "recording open" >>>;
             recorded_samples[i] => sampler.wavFilename;
-            GainRamp("up");
+            GainRamp(sampler_gain, "up", sample_ramp_length);
             sample_length::second => now;
-            GainRamp("down");
+            GainRamp(sampler_gain, "up", sample_ramp_length);
             recorded_samples[i] => sampler.closeFile;
             <<< "recording closed" >>>;
             time_between_samples::second => now;
@@ -44,20 +44,17 @@ fun void SamplerRecord(){
 
 //MINOR FUNCTIONS ============================================================
 //volume ramp for sampling clips
-fun void GainRamp (string direction){ //ramp sampler volume quickly up or down to avoid pops at either end of recording
-    if (direction != "up" && direction != "down"){
-        "up" => direction;
-        <<< "GainRamp defaults to up as incorrect argument was sent" >>>;
-    }
+fun void GainRamp (Gain gain, string direction, float length){ //ramp sampler volume quickly up or down to avoid pops at either end of recording
+    0.5/length => float adjustment_amount; // always ramp to 0.5
     if (direction == "up"){
-        for (0 => int i; i < ramp_length; i++){
-            sampler.gain()+0.001 => sampler.gain;
+        for (0 => int i; i < length; i++){
+            gain.gain()+adjustment_amount => gain.gain;
             1::ms => now;
         }
     }
     else if (direction == "down" ){
-        for (0 => int i; i < 500; i++){
-            if (sampler.gain() > 0) sampler.gain()-0.001 => sampler.gain;
+        for (0 => int i; i < length; i++){
+            if (gain.gain() > 0) gain.gain()-adjustment_amount => gain.gain;
             1::ms => now;
         }
     }
