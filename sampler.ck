@@ -2,6 +2,7 @@ adc => Gain sampler_gain => WvOut sampler => blackhole; // setup a unit generato
 
 1 => sampler.gain;
 0 => sampler_gain.gain;
+
 // Variables ============================================================
 // Static
 90 => int max_samples; // maximum amount of samples that will be saved as .wav files
@@ -16,7 +17,7 @@ sample_length - (2 * (sample_ramp_length / 1000)) => sample_length; //adjust sam
 // Declared
 string recorded_samples[max_samples]; // declare array to store filenames of samples
 for (0 => int i; i < recorded_samples.cap(); i++){
-    "samples/sample" + Std.itoa(i) => recorded_samples[i]; // files will be named sample1, sample2 etc
+    "audio/samples/sample" + Std.itoa(i) => recorded_samples[i]; // files will be named sample1, sample2 etc
 }
 
 // run functions
@@ -42,8 +43,7 @@ fun void SamplerRecord(){
     }
 }
 
-//MINOR FUNCTIONS ============================================================
-//volume ramp for sampling clips
+// Gain Ramp for fading clips
 fun void GainRamp (Gain gain, string direction, float length){ //ramp sampler volume quickly up or down to avoid pops at either end of recording
     0.5/length => float adjustment_amount; // always ramp to 0.5
     if (direction == "up"){
