@@ -3,6 +3,8 @@ adc => Gain sampler_gain => WvOut sampler => blackhole; // setup a unit generato
 1 => sampler.gain;
 0 => sampler_gain.gain;
 
+GainRamp ramp;
+
 // Variables ============================================================
 
 90 => int max_samples; // maximum amount of samples that will be saved as .wav files
@@ -31,9 +33,9 @@ fun void samplerRecord(){
         for (0 => int i; i < max_samples; i++){
             // <<< "recording open, sample " + Std.itoa(i) >>>;
             recorded_samples[i] => sampler.wavFilename;
-            gainRamp(sampler_gain, "up", sample_ramp_length);
+            ramp.gainRamp(sampler_gain, "up", sample_ramp_length);
             sample_length::second => now;
-            gainRamp(sampler_gain, "down", sample_ramp_length);
+            ramp.gainRamp(sampler_gain, "down", sample_ramp_length);
             recorded_samples[i] => sampler.closeFile;
             // <<< "recording closed, sample " + Std.itoa(i) >>>;
             time_between_samples::second => now;
