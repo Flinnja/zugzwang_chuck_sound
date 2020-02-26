@@ -1,7 +1,8 @@
 adc => Gain through_gain => dac;
 
-Globals globals;
+//Globals globals;
 
-.4 => through_gain.gain;
+0 => through_gain.gain;
 
-globals.play_time::minute => now;
+//globals.play_time::minute => now;
+1::day => now;
